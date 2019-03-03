@@ -13,13 +13,9 @@ const int pinDir = 8;         /////
 
 int receivedChar; // The number of the new position by serial monitor
 
-boolean newData = false; // It used for showNewData Function to send new data once you click send 
-
 long oldPosition = -999;
 
 int DIR; // direction - LOW or HIGH if statement
-
-//boolean active = false;
 
 boolean l_Dir = false; // LOW if statement
 
@@ -71,20 +67,21 @@ void runMotor()
 
         DIR = LOW;
         digitalWrite(pinDir, DIR);
-        Serial.println();
 
         accFubc();
     }
 
     //Deceleration if statement
-    if (counter.newPosition >= (receivedChar - 8) && gDown == true && l_Dir == true) {
+    if (counter.newPosition >= (receivedChar) && gDown == true && l_Dir == true) {
 
         dccFubc();
 
-        Serial.println();
+        Serial.println("stop low");
+        Serial.println(counter.newPosition);
 
         h_Dir = false;
     }
+
 
     // ----------------------  HIGH DIR ------------------------------
 
@@ -94,17 +91,17 @@ void runMotor()
         DIR = HIGH;
 
         digitalWrite(pinDir, DIR);
-        Serial.println();
 
         accFubc();
     }
 
     //Deceleration if statement
-    if (counter.newPosition <= (receivedChar + 1) && h_Dir == true && gDown == true) {
+    if (counter.newPosition <= (receivedChar) && h_Dir == true && gDown == true) {
 
         dccFubc();
 
-        Serial.println();
+        Serial.println("stop high");
+        Serial.println(counter.newPosition);
         l_Dir = false;
     }
 }
@@ -114,23 +111,13 @@ void loop()
 {
 
     recvOneChar();
-    showNewData();
     runMotor();
 }
 
 void recvOneChar()
 {
-    if (Serial.available() > 0) {
+    if (Serial.available()) {
         receivedChar = Serial.parseInt();
-        newData = true;
-    }
-}
-
-void showNewData()
-{
-    if (newData == true) {
-
-        newData = false;
 
         MotorCounter counter2; // 2nd use of MotorCounter
         
@@ -145,29 +132,29 @@ void showNewData()
     }
 }
 
+
+
 void accFubc() //Aceleration start function
 {
-    if (aSpeed >= 0) {
-        aSpeed = aSpeed + 1;
-        if (aSpeed >= 254) {
-            aSpeed = 255;
-            dSpeed = 255;
-            gDown = true;
-        }
-        analogWrite(pinPwm, aSpeed);
+    while(aSpeed <= 254){
+       analogWrite(pinPwm, aSpeed);
+       Serial.println();
+       Serial.println();
+     aSpeed++;
     }
+    gDown = true;
+    dSpeed = 255;
 }
 
 void dccFubc()  //Deceleration start function
 {
 
-    if (dSpeed >= 0) {
-        dSpeed = dSpeed - 1;
-        if (dSpeed <= 0) {
-            dSpeed = 0;
-            aSpeed = 0;
-        }
-        analogWrite(pinPwm, dSpeed);
+    while(dSpeed > 0){
+       analogWrite(pinPwm, dSpeed);
+       Serial.println();
+      Serial.println();
+     dSpeed--;
     }
+    gDown = false;
+    aSpeed = 0;
 }
-
