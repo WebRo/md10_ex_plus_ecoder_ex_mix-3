@@ -5,17 +5,17 @@
 
 Encoder myEnc(2, 11); // Encoder pin
 
-// PWM is connected to pin 3. /////
-const int pinPwm = 3;         ///////
-                              //////// ---->  Cytron Shild pins
-// DIR is connected to pin 2. //////
-const int pinDir = 8;         /////
+const int IN1 = 7;
+const int IN2 = 6;
+const int ENA = 9;
 
-int receivedChar; // The number of the new position by serial monitor
+long int receivedChar; // The number of the new position by serial monitor
 
 long oldPosition = -999;
 
-int DIR; // direction - LOW or HIGH if statement
+int DIR1; // direction - LOW or HIGH if statement
+
+int DIR2; // direction - LOW or HIGH if statement
 
 boolean l_Dir = false; // LOW if statement
 
@@ -38,8 +38,9 @@ void setup()
     Serial.begin(9600);
     Serial.setTimeout(10);
     // Initialize the PWM and DIR pins as digital outputs.
-    pinMode(pinPwm, OUTPUT);
-    pinMode(pinDir, OUTPUT);
+    pinMode(IN1, OUTPUT);
+    pinMode(IN2, OUTPUT);
+    pinMode(ENA, OUTPUT);
 }
 
 class MotorCounter { // OOP Class you could use it in many different places.
@@ -65,8 +66,10 @@ void runMotor()
        //Aeceleration if statement
     if (receivedChar && l_Dir == true && counter.newPosition < receivedChar) {
 
-        DIR = LOW;
-        digitalWrite(pinDir, DIR);
+        DIR1 = HIGH;
+        DIR2 = LOW;
+        digitalWrite(IN1, DIR1);
+        digitalWrite(IN2, DIR2);
 
         accFubc();
     }
@@ -82,15 +85,16 @@ void runMotor()
         h_Dir = false;
     }
 
+Serial.println(receivedChar);
 
     // ----------------------  HIGH DIR ------------------------------
 
        //Aeceleration if statement
     if (receivedChar && h_Dir == true && counter.newPosition > receivedChar) {
-
-        DIR = HIGH;
-
-        digitalWrite(pinDir, DIR);
+        DIR1 = LOW;
+        DIR2 = HIGH;
+        digitalWrite(IN1, DIR1);
+        digitalWrite(IN2, DIR2);
 
         accFubc();
     }
@@ -116,9 +120,11 @@ void loop()
 
 void recvOneChar()
 {
-    if (Serial.available()) {
-        receivedChar = Serial.parseInt();
-
+    if (Serial.available() > 0) {
+        int c = Serial.parseInt();
+        if(c != 0){
+          receivedChar = c;
+          }
         MotorCounter counter2; // 2nd use of MotorCounter
         
         if (counter2.newPosition < receivedChar) { // LOW DIR
@@ -137,10 +143,10 @@ void recvOneChar()
 void accFubc() //Aceleration start function
 {
     while(aSpeed <= 254){
-       analogWrite(pinPwm, aSpeed);
+       analogWrite(ENA, aSpeed);
        Serial.println();
        Serial.println();
-     aSpeed++;
+    aSpeed = aSpeed + 1;
     }
     gDown = true;
     dSpeed = 255;
@@ -150,10 +156,10 @@ void dccFubc()  //Deceleration start function
 {
 
     while(dSpeed > 0){
-       analogWrite(pinPwm, dSpeed);
+       analogWrite(ENA, dSpeed);
        Serial.println();
       Serial.println();
-     dSpeed--;
+     dSpeed = dSpeed -5;
     }
     gDown = false;
     aSpeed = 0;
