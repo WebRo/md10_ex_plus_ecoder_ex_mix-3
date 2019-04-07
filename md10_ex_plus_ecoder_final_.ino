@@ -85,7 +85,7 @@ void runMotor()
         h_Dir = false;
     }
 
-Serial.println(receivedChar);
+Serial.println(counter.newPosition);
 
     // ----------------------  HIGH DIR ------------------------------
 
@@ -121,7 +121,7 @@ void loop()
 void recvOneChar()
 {
     if (Serial.available() > 0) {
-        int c = Serial.parseInt();
+      long  int c = Serial.parseInt();
         if(c != 0){
           receivedChar = c;
           }
@@ -159,7 +159,7 @@ void dccFubc()  //Deceleration start function
        analogWrite(ENA, dSpeed);
        Serial.println();
       Serial.println();
-     dSpeed = dSpeed -5;
+     dSpeed = dSpeed - 5;
     }
     gDown = false;
     aSpeed = 0;
